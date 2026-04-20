@@ -29,8 +29,30 @@
     if (!file) throw new Error('v3 prototype not found in bundle');
     const html = await file.async('string');
     const frame = document.getElementById('frame');
-    frame.srcdoc = html;
+    // Carry through any incoming hash so direct deep-links work.
+    if (location.hash) {
+      try {
+        const sep = html.lastIndexOf('</body>');
+        const inject = '<script>if (!window.location.hash) window.location.hash = ' + JSON.stringify(location.hash) + ';<\/script>';
+        const patched = sep === -1 ? html + inject : html.slice(0, sep) + inject + html.slice(sep);
+        frame.srcdoc = patched;
+      } catch (e) { frame.srcdoc = html; }
+    } else {
+      frame.srcdoc = html;
+    }
     frame.style.display = 'block';
+    // Mirror iframe hash to the top-level URL so deep links can be shared.
+    frame.addEventListener('load', function () {
+      try {
+        const inner = frame.contentWindow;
+        const sync = function () {
+          const h = inner.location.hash;
+          if (h && h !== location.hash) history.replaceState(null, '', h);
+        };
+        sync();
+        inner.addEventListener('hashchange', sync);
+      } catch (e) { /* cross-origin or detached - ignore */ }
+    });
     document.getElementById('loader').remove();
   } catch (e) {
     document.getElementById('loader').innerHTML = '<div class="err">Failed to load site: ' + (e && e.message ? e.message : e) + '</div>';
