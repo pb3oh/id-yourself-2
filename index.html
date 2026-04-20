@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Identify Yourself — Branded merch, thoughtfully made</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f4efe8; color: #171312; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  iframe { width: 100%; height: 100%; border: 0; display: block; }
+  .loader { position: fixed; inset: 0; display: grid; place-items: center; gap: 24px; grid-auto-flow: row; }
+  .loader .mark { width: 64px; height: 64px; border-radius: 50%; background: #c7372f; color: #fff; display: grid; place-items: center; font-style: italic; font-size: 32px; font-family: "Times New Roman", serif; letter-spacing: -0.04em; animation: pulse 1.4s ease-in-out infinite; }
+  .loader .label { font-family: ui-monospace, "JetBrains Mono", Menlo, monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #6b615a; }
+  .loader .err { padding: 20px; max-width: 640px; font-family: ui-monospace, monospace; font-size: 13px; color: #8f221c; }
+  @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(0.9); opacity: 0.7; } }
+</style>
+</head>
+<body>
+<div id="loader" class="loader"><div class="mark"><span style="transform:translate(-1px,1px);display:inline-block">id.</span></div><div class="label">Loading site…</div></div>
+<iframe id="frame" style="display:none"></iframe>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+(async function () {
+  try {
+    const res = await fetch('Identify%20Yourself.zip');
+    if (!res.ok) throw new Error('Could not fetch site bundle (' + res.status + ')');
+    const buf = await res.arrayBuffer();
+    const zip = await JSZip.loadAsync(buf);
+    const file = zip.file('design_handoff_identify_yourself/Identify Yourself v3.html');
+    if (!file) throw new Error('v3 prototype not found in bundle');
+    const html = await file.async('string');
+    const frame = document.getElementById('frame');
+    frame.srcdoc = html;
+    frame.style.display = 'block';
+    document.getElementById('loader').remove();
+  } catch (e) {
+    document.getElementById('loader').innerHTML = '<div class="err">Failed to load site: ' + (e && e.message ? e.message : e) + '</div>';
+  }
+})();
+</script>
+</body>
+</html>
